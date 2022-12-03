@@ -1,0 +1,112 @@
+version: '3.3'
+
+services:
+  rabbitmq:
+    container_name: "rabbitmq2"
+    image: rabbitmq:3.7-management
+    ports:
+      # AMQP protocal port
+      - 5673:5672
+      # HTTP management UI
+      - 15673:15672
+
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/
+      - rabbitmq:/var/log/rabbitmq
+    networks:
+      - symfony
+
+  mysql:
+    container_name: database2
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    ports:
+      - '4306:3306'
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - symfony
+  php:
+    container_name: php2
+    build:
+      context: ./php
+    ports:
+      - '9001:9000'
+    volumes:
+      - ./app:/var/www/symfony_docker
+    depends_on:
+      - mysql
+      - rabbitmq
+    links:
+      - mysql
+      - rabbitmq
+    networks:
+      - symfony
+  # we'll use a seeder container to create our test table, that our scheduled PHP script will write to
+  fixtures:
+    build:
+      context: ./fixture
+    container_name: fixtures
+    working_dir: /var/www/symfony_docker
+    links:
+      - mysql
+    volumes:
+      - ./app:/var/www/symfony_docker
+    entrypoint: [ "bash", "-c", "sleep 10 && php bin/console --no-interaction doctrine:migrations:migrate && php bin/console --no-interaction doctrine:fixtures:load && exit" ]
+    depends_on:
+      - mysql
+      - php
+    networks:
+      - symfony
+  nginx:
+    container_name: nginx2
+    image: nginx:stable-alpine
+    ports:
+      - '8087:80'
+    volumes:
+      - ./app:/var/www/symfony_docker
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - mysql
+      - rabbitmq
+    networks:
+      - symfony
+  npm:
+    container_name: npm
+    build:
+      context: ./npm
+    volumes:
+      - ./app:/var/www/symfony_docker
+    working_dir: /var/www/symfony_docker
+    entrypoint: [ "bash", "-c", 'yarn install && yarn build && exit' ]
+    depends_on:
+      - php
+    networks:
+      - symfony
+  cron:
+    build:
+      context: ./cron
+    container_name: cron
+    working_dir: /var/www/symfony_docker
+    links:
+      - mysql
+      - php
+    volumes:
+      - ./app:/var/www/symfony_docker
+    depends_on:
+      - mysql
+      - php
+    networks:
+      - symfony
+volumes:
+  mysql:
+  rabbitmq:
+
+networks:
+  symfony:

@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login - HotNews!{% endblock %}
+
+{% block body %}
+<div class="container">
+    <main>
+        <div class="py-5 text-center mt-5">
+            <h2>Login form</h2>
+            <p class="lead">Login with email and password</p>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12">
+                <h4 class="mb-3">User Login</h4>
+                {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                <form class="needs-validation" novalidate action="{{ path('app_login') }}" method="post">
+                    <div class="row">
+
+                        <div class="col-12">
+                            <label for="email" class="form-label">Email
+                            </label>
+                            <input type="email" class="form-control" id="username" name="_username" value="{{ last_username }}" placeholder="you@example.com">
+                        </div>
+
+                        <div class="col-12">
+                            <label for="email" class="form-label">Password
+                            </label>
+                            <input type="password" class="form-control" id="password" name="_password" >
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                        <hr class="my-4">
+
+                        <button class="w-100 btn btn-primary btn-lg" type="submit">Login</button>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

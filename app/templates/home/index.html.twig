@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Homepage - HotNews!{% endblock %}
+
+{% block body %}
+    <div class="container">
+        {% include 'nav/header.html.twig' %}
+        <main>
+            <div class="py-5 text-center mt-5">
+                <h2>News Briefs</h2>
+                <p class="lead">Get Latest News</p>
+            </div>
+
+            <div class="row g-3">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Excerpt</th>
+                        <th scope="col">Image</th>
+                        <th scope="col">Published Date</th>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <th scope="col">Actions</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% if news %}
+                        {% set i = (maxResults*currentPage) - maxResults %}
+
+                        {% for item in news %}
+                            <tr>
+                                <th scope="row">
+                                    {{ i + 1  }}
+                                </th>
+                                <td> {% autoescape %}
+                                        {{ item.title|raw }} {# var won't be escaped #}
+                                    {% endautoescape %}
+                                </td>
+                                <td>
+                                    {% autoescape %}
+                                        {{ item.excerpt|raw }} {# var won't be escaped #}
+                                    {% endautoescape %}
+
+                                </td>
+                                <td><img src="{{ item.picture }}"></td>
+                                <td>{{ item.pubDate|format_datetime() }}</td>
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <td><a href="{{ path('app_news_delete_item',{id: item.id}) }}">Delete</a></td>
+                                {% endif %}
+                            </tr>
+                            {% set i = i + 1 %}
+                        {% endfor %}
+                    {% endif %}
+
+                    </tbody>
+                </table>
+                {% include 'pagination/paginate.html.twig' %}
+            </div>
+        </main>
+        {% include 'nav/footer.html.twig' %}
+    </div>
+
+{% endblock %}

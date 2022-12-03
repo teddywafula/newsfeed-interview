@@ -1,0 +1,23 @@
+{% if totalPages > 0 %}
+    <nav aria-label="...">
+
+        <ul class="pagination">
+            <li class="page-item">
+                <a class="page-link" href="{{ path('app_home', {page: 1}) }}" tabindex="-1" aria-disabled="true">First</a>
+            </li>
+            {% for i in range(left, right) %}
+                <li class="page-item
+                            {% if i == currentPage %}
+                            active
+                            {% endif %}
+                            ">
+                    <a class="page-link" href="{{ path('app_home', {page: i}) }}">{{ i }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path('app_home', {page: totalPages}) }}">Last</a>
+            </li>
+        </ul>
+
+    </nav>
+{% endif %}

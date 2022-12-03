@@ -1,0 +1,4 @@
+# run the command to trigger parser every minute
+# using `>` instead of `>>` to append a new line at each cron iteration
+* * * * * /usr/local/bin/php /var/www/symfony_docker/bin/console app:get-news 2>&1
+*/2 * * * * /usr/local/bin/php /var/www/symfony_docker/bin/console messenger:consume async 2>&1
